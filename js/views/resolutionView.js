@@ -1,4 +1,5 @@
 import { api } from "../api.js";
+import { showToast } from "../utils/toast.js";
 
 export function initResolutionView(onClaimResolved) {
   const emptyState = document.getElementById("resolution-empty-state");
@@ -119,8 +120,9 @@ export function initResolutionView(onClaimResolved) {
       btnLookup.textContent = "Buscando...";
       const data = await api.getClaimStatus(claimId);
       displayClaim(data);
+      showToast(`Caso #${claimId} recuperado de la base de datos`, "info", 2500);
     } catch (error) {
-      alert(`No se encontró el reclamo #${claimId}: ${error.message}`);
+      showToast(`No se encontró el reclamo #${claimId}: ${error.message}`, "error", 4000);
     } finally {
       btnLookup.disabled = false;
       btnLookup.textContent = "Buscar";
@@ -137,11 +139,11 @@ export function initResolutionView(onClaimResolved) {
     try {
       btnApprove.disabled = true;
       const res = await api.resolveClaim(currentClaimId, "APPROVED_BY_HUMAN", notes);
-      alert(`✅ Reclamo #${currentClaimId} aprobado. Se generó la guía logística: ${res.resolution?.tracking_number}`);
+      showToast(`✅ Reclamo #${currentClaimId} aprobado. Guía generada: ${res.resolution?.tracking_number}`, "success", 4500);
       await lookupClaim(currentClaimId);
       if (onClaimResolved) onClaimResolved();
     } catch (error) {
-      alert(`Error al aprobar: ${error.message}`);
+      showToast(`Error al aprobar: ${error.message}`, "error", 4500);
     } finally {
       btnApprove.disabled = false;
     }
@@ -152,11 +154,11 @@ export function initResolutionView(onClaimResolved) {
     try {
       btnReject.disabled = true;
       await api.resolveClaim(currentClaimId, "REJECTED_BY_HUMAN", notes);
-      alert(`❌ Reclamo #${currentClaimId} rechazado.`);
+      showToast(`❌ Reclamo #${currentClaimId} rechazado formalmente.`, "warning", 4000);
       await lookupClaim(currentClaimId);
       if (onClaimResolved) onClaimResolved();
     } catch (error) {
-      alert(`Error al rechazar: ${error.message}`);
+      showToast(`Error al rechazar: ${error.message}`, "error", 4500);
     } finally {
       btnReject.disabled = false;
     }

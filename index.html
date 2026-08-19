@@ -69,6 +69,15 @@
           </div>
         </div>
 
+        <!-- Botones de Acceso Rápido para Casos de Demostración -->
+        <div style="display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 20px; align-items: center;">
+          <span style="font-size: 12px; font-weight: 700; color: var(--text-muted); text-transform: uppercase;">Cargar Caso de Prueba:</span>
+          <button type="button" class="btn btn-outline btn-sm btn-preset" data-preset="caso1">🎧 Caso 1: Auto ($45k)</button>
+          <button type="button" class="btn btn-outline btn-sm btn-preset" data-preset="caso2">🖥️ Caso 2: Monto ($180k)</button>
+          <button type="button" class="btn btn-outline btn-sm btn-preset" data-preset="caso3">🩲 Caso 3: Higiene</button>
+          <button type="button" class="btn btn-outline btn-sm btn-preset" data-preset="caso4">⌚ Caso 4: Vencido</button>
+        </div>
+
         <div class="grid-2">
           <!-- Formulario de Reclamo -->
           <div class="card">
@@ -95,8 +104,8 @@
                 <div class="file-dropzone" id="dropzone">
                   <div class="file-dropzone-icon">☁️</div>
                   <p><strong>Arrastre o seleccione una fotografía del producto</strong></p>
-                  <p style="font-size: 12px; color: var(--text-muted);">PNG, JPG hasta 10MB</p>
-                  <input type="file" id="input-image" accept="image/*" style="display: none;" required>
+                  <p style="font-size: 12px; color: var(--text-muted);">PNG, JPG hasta 10MB (o use un preset para generar muestra)</p>
+                  <input type="file" id="input-image" accept="image/*" style="display: none;">
                   <button type="button" class="btn btn-outline" style="margin-top: 10px;" onclick="document.getElementById('input-image').click()">Seleccionar Archivo</button>
                   <img id="image-preview" class="file-preview-img" alt="Vista previa">
                 </div>
@@ -193,7 +202,6 @@
               </p>
 
               <div id="hitl-queue-container">
-                <!-- Se puebla dinámicamente con JS -->
                 <p style="color: var(--text-muted); font-size: 13px;">Cargando casos pendientes...</p>
               </div>
             </div>
