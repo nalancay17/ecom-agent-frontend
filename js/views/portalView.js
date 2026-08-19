@@ -42,7 +42,7 @@ export function initPortalView(onClaimProcessed) {
     });
   }
 
-  // --- 2. Presets / Casos de Prueba Rápidos ---
+  // --- 3. Presets / Casos de Prueba Rápidos ---
   const presets = {
     caso1: {
       orderId: "ORD-1002",
@@ -94,7 +94,7 @@ export function initPortalView(onClaimProcessed) {
     });
   });
 
-  // --- 3. Vista Previa de Archivo ---
+  // --- 4. Vista Previa de Archivo ---
   fileInput.addEventListener("change", () => {
     const file = fileInput.files[0];
     if (file) {
@@ -126,7 +126,7 @@ export function initPortalView(onClaimProcessed) {
     }
   });
 
-  // --- 4. Envío de Formulario (POST /api/v1/claims) ---
+  // --- 5. Envío de Formulario (POST /api/v1/claims) ---
   form.addEventListener("submit", async (e) => {
     e.preventDefault();
 
@@ -136,7 +136,6 @@ export function initPortalView(onClaimProcessed) {
     let imageFile = fileInput.files[0];
 
     if (!imageFile) {
-      // Si no seleccionó imagen, autogenerar una de prueba para no bloquear la demo
       imageFile = await createSampleImageBlob(`Reclamo: ${orderId}`);
     }
 

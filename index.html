@@ -134,11 +134,11 @@
                 El sistema aplicará visión multimodal y contrastará el reclamo con la base documental corporativa.
               </p>
               <div style="font-size: 13px; display: flex; flex-direction: column; gap: 8px;">
-                <div>🟢 <strong>Paso 1:</strong> Validación en OMS y Memoria Episódica</div>
-                <div>⚪ <strong>Paso 2:</strong> Inspección Visual de Daño (Gemini)</div>
-                <div>⚪ <strong>Paso 3:</strong> Evaluación de Fraude y Riesgo</div>
-                <div>⚪ <strong>Paso 4:</strong> Agentic RAG (Manual de Políticas)</div>
-                <div>⚪ <strong>Paso 5:</strong> Guardrails & Logística Inversa</div>
+                <div id="step-oms">🟢 <strong>Paso 1:</strong> Validación en OMS y Memoria Episódica</div>
+                <div id="step-vision">⚪ <strong>Paso 2:</strong> Inspección Visual de Daño (Gemini)</div>
+                <div id="step-risk">⚪ <strong>Paso 3:</strong> Evaluación de Fraude y Riesgo</div>
+                <div id="step-rag">⚪ <strong>Paso 4:</strong> Agentic RAG (Manual de Políticas)</div>
+                <div id="step-action">⚪ <strong>Paso 5:</strong> Guardrails & Logística Inversa</div>
               </div>
             </div>
 
@@ -190,9 +190,9 @@
         </div>
 
         <div class="grid-2">
-          <!-- Columna Izquierda: Cola HITL -->
+          <!-- Columna Izquierda: Cola HITL y Tabla de Orquestación en Vivo -->
           <div>
-            <div class="card">
+            <div class="card" style="margin-bottom: 20px;">
               <div class="card-title">
                 <span>⚠️</span> Cola Human-In-The-Loop (HITL)
                 <span class="nav-badge" id="dashboard-hitl-count">0</span>
@@ -203,6 +203,29 @@
 
               <div id="hitl-queue-container">
                 <p style="color: var(--text-muted); font-size: 13px;">Cargando casos pendientes...</p>
+              </div>
+            </div>
+
+            <!-- Tabla de Orquestación en Vivo (Wireframe Feature) -->
+            <div class="card">
+              <div class="card-title">
+                <span>🤖</span> Orquestación de Agentes en Vivo
+              </div>
+              <div style="overflow-x: auto;">
+                <table style="width: 100%; border-collapse: collapse; font-size: 13px; text-align: left;" id="table-live-orchestration">
+                  <thead>
+                    <tr style="border-bottom: 2px solid var(--border-color); color: var(--text-muted);">
+                      <th style="padding: 10px 8px;">ID / Caso</th>
+                      <th style="padding: 10px 8px;">Cliente</th>
+                      <th style="padding: 10px 8px;">Estado</th>
+                      <th style="padding: 10px 8px;">Confianza</th>
+                      <th style="padding: 10px 8px;">Acción</th>
+                    </tr>
+                  </thead>
+                  <tbody id="tbody-live-orchestration">
+                    <tr><td colspan="5" style="padding: 12px; color: var(--text-muted); text-align: center;">Cargando historial de agentes...</td></tr>
+                  </tbody>
+                </table>
               </div>
             </div>
           </div>
@@ -275,6 +298,7 @@
           <div style="display: flex; gap: 10px;">
             <input type="text" id="input-lookup-claim-id" class="form-input" style="width: 220px;" placeholder="e.g. CLM-INIT-001">
             <button class="btn btn-outline" id="btn-lookup-claim">Buscar</button>
+            <button class="btn btn-outline" id="btn-print-case" title="Imprimir o exportar resumen">🖨️ Imprimir</button>
           </div>
         </div>
 
@@ -289,7 +313,7 @@
         <div id="resolution-content" style="display: none;">
           <!-- Tarjeta Principal de Veredicto -->
           <div class="card" style="margin-bottom: 24px; border-left: 6px solid var(--primary);" id="resolution-status-card">
-            <div style="display: flex; justify-content: space-between; align-items: flex-start;">
+            <div style="display: flex; justify-content: space-between; align-items: flex-start; flex-wrap: wrap; gap: 16px;">
               <div>
                 <span class="status-badge status-approved" id="res-badge-status">APPROVED_AUTO</span>
                 <h2 style="font-size: 22px; font-weight: 700; margin-top: 8px;" id="res-title">Devolución Aprobada Automáticamente</h2>
@@ -301,9 +325,9 @@
               <div id="res-logistics-box" style="display: none; text-align: right;">
                 <div style="font-size: 12px; color: var(--text-muted);">Guía de Logística Inversa:</div>
                 <div style="font-size: 16px; font-weight: 700; color: var(--primary);" id="res-tracking-number">-</div>
-                <a href="#" target="_blank" class="btn btn-success" id="res-btn-label" style="margin-top: 8px;">
-                  <span>📥 Descargar Etiqueta PDF</span>
-                </a>
+                <button type="button" class="btn btn-success" id="res-btn-label" style="margin-top: 8px;">
+                  <span>📥 Ver Etiqueta de Despacho</span>
+                </button>
               </div>
             </div>
           </div>
@@ -371,6 +395,33 @@
 
     </main>
   </div>
+
+  <!-- Modal de Vista Previa de Etiqueta de Despacho (Andreani) -->
+  <dialog id="modal-label-preview" style="border: 1px solid var(--border-color); border-radius: var(--border-radius-md); padding: 24px; max-width: 520px; width: 90%; margin: auto;">
+    <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border-color); padding-bottom: 12px; margin-bottom: 16px;">
+      <h3 style="font-size: 16px; font-weight: 700;">Etiqueta Oficial de Devolución</h3>
+      <button type="button" class="btn btn-outline btn-sm" onclick="document.getElementById('modal-label-preview').close()">✕</button>
+    </div>
+    <div style="border: 2px solid #0f172a; padding: 20px; border-radius: 8px; background: #fff; font-family: var(--font-mono);">
+      <div style="display: flex; justify-content: space-between; border-bottom: 2px solid #0f172a; padding-bottom: 8px; margin-bottom: 12px;">
+        <div><strong>LOGÍSTICA INVERSA</strong><br><span style="font-size: 12px;">ANDREANI EXPRESS</span></div>
+        <div style="font-size: 24px;">📦</div>
+      </div>
+      <div style="font-size: 12px; line-height: 1.5; margin-bottom: 14px;">
+        <div><strong>REMITENTE:</strong> <span id="label-client-name">-</span></div>
+        <div><strong>DESTINO:</strong> Centro de Devoluciones E-Com (Planta Pacheco)</div>
+        <div><strong>NÚMERO DE GUÍA:</strong> <span id="label-tracking-code" style="font-weight: 800; font-size: 14px; color: var(--primary);">-</span></div>
+      </div>
+      <div style="text-align: center; border-top: 1px dashed #64748b; padding-top: 12px;">
+        <div style="font-size: 28px; letter-spacing: 4px; font-family: monospace;">||| | |||| || ||||| | |||</div>
+        <div style="font-size: 10px; color: var(--text-muted); margin-top: 4px;">Pegue esta etiqueta en el embalaje original del paquete.</div>
+      </div>
+    </div>
+    <div style="display: flex; justify-content: flex-end; gap: 10px; margin-top: 16px;">
+      <button class="btn btn-primary btn-sm" onclick="window.print()">🖨️ Imprimir</button>
+      <button class="btn btn-outline btn-sm" onclick="document.getElementById('modal-label-preview').close()">Cerrar</button>
+    </div>
+  </dialog>
 
   <!-- Modal de Configuración de API URL -->
   <dialog id="modal-api-config" style="border: 1px solid var(--border-color); border-radius: var(--border-radius-md); padding: 24px; max-width: 480px; margin: auto;">

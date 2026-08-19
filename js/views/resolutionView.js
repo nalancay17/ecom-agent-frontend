@@ -24,6 +24,11 @@ export function initResolutionView(onClaimResolved) {
   const logisticsBox = document.getElementById("res-logistics-box");
   const trackingNumberEl = document.getElementById("res-tracking-number");
   const btnLabel = document.getElementById("res-btn-label");
+  const btnPrintCase = document.getElementById("btn-print-case");
+
+  const modalLabelPreview = document.getElementById("modal-label-preview");
+  const labelClientName = document.getElementById("label-client-name");
+  const labelTrackingCode = document.getElementById("label-tracking-code");
 
   const hitlActionPanel = document.getElementById("hitl-action-panel");
   const hitlReasonsText = document.getElementById("hitl-reasons-text");
@@ -34,7 +39,7 @@ export function initResolutionView(onClaimResolved) {
   const inputLookupId = document.getElementById("input-lookup-claim-id");
   const btnLookup = document.getElementById("btn-lookup-claim");
 
-  let currentClaimId = null;
+  let currentClaimData = null;
 
   /**
    * Renderiza los datos completos de un reclamo en la vista de auditoría
@@ -49,7 +54,7 @@ export function initResolutionView(onClaimResolved) {
     emptyState.style.display = "none";
     contentState.style.display = "block";
 
-    currentClaimId = claimData.claim_id;
+    currentClaimData = claimData;
     titleLabel.textContent = `Auditoría del Caso #${claimData.claim_id}`;
 
     // 1. Estado y Estilos de Badge
@@ -91,12 +96,12 @@ export function initResolutionView(onClaimResolved) {
 
     // 5. Logística Inversa (si existe guía generada)
     const tracking = claimData.tracking_number || claimData.action_details?.logistics?.tracking_number;
-    const labelUrl = claimData.label_url || claimData.action_details?.logistics?.label_url;
 
     if (tracking) {
       logisticsBox.style.display = "block";
       trackingNumberEl.textContent = tracking;
-      btnLabel.href = labelUrl || "#";
+      labelClientName.textContent = claimData.client_name || claimData.client_id || "Cliente";
+      labelTrackingCode.textContent = tracking;
     } else {
       logisticsBox.style.display = "none";
     }
@@ -110,6 +115,22 @@ export function initResolutionView(onClaimResolved) {
     } else {
       hitlActionPanel.style.display = "none";
     }
+  }
+
+  // Abrir Modal de Etiqueta
+  if (btnLabel) {
+    btnLabel.addEventListener("click", () => {
+      if (modalLabelPreview) {
+        modalLabelPreview.showModal();
+      }
+    });
+  }
+
+  // Imprimir Caso
+  if (btnPrintCase) {
+    btnPrintCase.addEventListener("click", () => {
+      window.print();
+    });
   }
 
   // Búsqueda Manual por ID (GET /api/v1/claims/{id})
@@ -136,11 +157,12 @@ export function initResolutionView(onClaimResolved) {
   // Acciones de Resolución del Supervisor (POST /api/v1/claims/{id}/resolve)
   btnApprove.addEventListener("click", async () => {
     const notes = inputNotes.value.trim() || "Aprobado tras auditoría del supervisor humano.";
+    const claimId = currentClaimData?.claim_id;
     try {
       btnApprove.disabled = true;
-      const res = await api.resolveClaim(currentClaimId, "APPROVED_BY_HUMAN", notes);
-      showToast(`✅ Reclamo #${currentClaimId} aprobado. Guía generada: ${res.resolution?.tracking_number}`, "success", 4500);
-      await lookupClaim(currentClaimId);
+      const res = await api.resolveClaim(claimId, "APPROVED_BY_HUMAN", notes);
+      showToast(`✅ Reclamo #${claimId} aprobado. Guía generada: ${res.resolution?.tracking_number}`, "success", 4500);
+      await lookupClaim(claimId);
       if (onClaimResolved) onClaimResolved();
     } catch (error) {
       showToast(`Error al aprobar: ${error.message}`, "error", 4500);
@@ -151,11 +173,12 @@ export function initResolutionView(onClaimResolved) {
 
   btnReject.addEventListener("click", async () => {
     const notes = inputNotes.value.trim() || "Rechazado por incumplimiento de términos tras auditoría humana.";
+    const claimId = currentClaimData?.claim_id;
     try {
       btnReject.disabled = true;
-      await api.resolveClaim(currentClaimId, "REJECTED_BY_HUMAN", notes);
-      showToast(`❌ Reclamo #${currentClaimId} rechazado formalmente.`, "warning", 4000);
-      await lookupClaim(currentClaimId);
+      await api.resolveClaim(claimId, "REJECTED_BY_HUMAN", notes);
+      showToast(`❌ Reclamo #${claimId} rechazado formalmente.`, "warning", 4000);
+      await lookupClaim(claimId);
       if (onClaimResolved) onClaimResolved();
     } catch (error) {
       showToast(`Error al rechazar: ${error.message}`, "error", 4500);
