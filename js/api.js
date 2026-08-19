@@ -10,7 +10,8 @@ class ApiClient {
    */
   async request(endpoint, options = {}) {
     const baseUrl = CONFIG.getApiBaseUrl();
-    const url = `${baseUrl}${endpoint}`;
+    const cleanEndpoint = endpoint.startsWith("/") ? endpoint : `/${endpoint}`;
+    const url = cleanEndpoint === "/" ? `${baseUrl}/` : `${baseUrl}${cleanEndpoint}`;
 
     try {
       const response = await fetch(url, options);
